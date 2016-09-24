@@ -2,7 +2,6 @@
 
 import numpy as np
 import matplotlib.pyplot as mpl
-import sys
 
 class Riding():
 
@@ -32,7 +31,7 @@ class Riding():
 
 
 def extract_electiondata():
-    ele_results = '/Users/relliotmeyer/Dropbox/EventResults.txt'
+    ele_results = '/Users/relliotmeyer/gitrepos/election2015AV/EventResults.txt'
 
     f = open(ele_results, 'r')
     str_data = f.readlines()
@@ -247,26 +246,39 @@ def alternative_vote(riding_list):
     print changed_party
     print party_lost
     print results, sum(results)
-
-def plot_results():
-
-    AV_results = [70, 212, 54, 1, 1]
-    regular_results = [99, 184, 44, 1,10]
-    x = [1,2,3,4,5]
-    labels = ['CPC','LPC','NDP','Green','Bloc']
-    fig, ax = mpl.subplots()
-    AV = ax.bar([0.75,1.75,2.75,3.75,4.75],regular_results, width = 0.5, color=['b','r','#FFA500','g','#07B1FF'])
-    mpl.xticks(x, labels, rotation=45)
     
+    return results
+
+def plot_results(AV_results):
+
+    mpl.close()
+    regular_results = [99, 184, 44, 1,10]
+    plot_results = []
+        
+    x = [1, 1.75, 2.5, 3.25, 4]
+    labels = ['CPC','LPC','NDP','GRN','BQ']
+    fig, ax = mpl.subplots()
+    AV = ax.bar([0.75,1.5,2.25,3,3.75],regular_results, width = 0.25, \
+        color=['b','r','#FFA500','g','#07B1FF'], label='FPTP')
+    AV = ax.bar(x,AV_results, width = 0.25, \
+        color=['#3399ff','r','#FFA500','g','#07B1FF'], alpha = 0.5, linewidth=2, \
+        label='IR')
+
+    mpl.xticks(x, labels, rotation=45, size = 15)
     mpl.ylabel('Seats', size = 15)
     mpl.ylim([0,220])
-    mpl.title('Election Results with FPTP',size = 18)
-    mpl.show()
-
+    mpl.title('Election Results: FPTP vs. IR',size = 20)
+    mpl.figtext(0.625,0.12,str(regular_results[3]),family='helvetica',weight='bold',size='large')
+    mpl.figtext(0.675,0.12,str(AV_results[3]),family='helvetica',weight='bold',size='large')
+    mpl.figtext(0.77,0.16,str(regular_results[4]),family='helvetica',weight='bold',size='large')
+    mpl.figtext(0.82,0.16,str(AV_results[4]),family='helvetica',weight='bold',size='large')
+    
+    mpl.legend()
+    mpl.show() 
     
 
 if __name__ == '__main__':
 
     riding_list = extract_electiondata()
-    alternative_vote(riding_list)
-    plot_results()
+    av_results= alternative_vote(riding_list)
+    plot_results(av_results)
