@@ -25,7 +25,7 @@ class Riding():
         if len(w) == 0:
             return 0.0
         else:
-            return self.votes[w]
+            return self.votes[w[0]]
         
 ################################################
 
@@ -112,6 +112,10 @@ def instant_runoff(votelist, verbose = False):
 
     for i, val in enumerate(vote_fraction):
         if val >= 0.5:
+            print "THERE IS A FPTP WINNER"
+            print "Votelist: " + str(votelist)
+            print "Votefraction: " + str(votelist/np.sum(votelist))
+            print
             return [votelist, partylist[i], n_iter]
         else:
             winner = False
@@ -119,31 +123,45 @@ def instant_runoff(votelist, verbose = False):
     if verbose == True:
         ind_sortedvotelist = np.argsort(votelist)
         fptp_winner = partylist[ind_sortedvotelist[-1]]
-            
+        print "###### STARTING SIMULATION #######"
+        print "Initial vote list: " + str(votelist)
+        print "Initial Vote Fraction: " + str(votelist/np.sum(votelist))
+        print "Party List: " + str(partylist)
+        print "Number of no candidate parties: %d" % (n_nocand)
+        print "Sorted indexes: "+ str(ind_sortedvotelist)
+        print "FPTP Winner: %s" % (fptp_winner)
+
     party_bool = [1,1,1,1,1]
-    
+     
     while winner == False:
-        if verbose == True:
-            print "Overall vote list: " + str(votelist)
-            
+        
+        #Getting a list of indexes of the sorted votes
         ind_sortedvotelist = np.argsort(votelist)
+        #Selecting the bottom party index
         bottomparty = ind_sortedvotelist[n_iter]
+        #Getting the votes for that party (Selecting from the original votes)
         bottomvotes = votelist[bottomparty]
+        #Distributing those votes by the secondary preferences
         bottom_dist = bottomvotes * choices[bottomparty]
+        #Adding those votes to the vote list
         votelist += bottom_dist
+        #Setting the bool value then multiplying the votelist by that value to remove them
         party_bool[bottomparty] = 0
         votelist *= party_bool
 
         vote_fraction = votelist / np.sum(votelist)
 
         if verbose == True:
+            print "########## N_ITER %d ##########" % (n_iter)
             print "Sorted party index: " + str(ind_sortedvotelist)
+            print "Bottom party: " + str(partylist[bottomparty])
             print "Bottom party index: " + str(bottomparty)
             print "Bottom party votes: " + str(bottomvotes)
             print "Bottom party redistribution: " + str(choices[bottomparty])
             print "Bottom party redistribution votes: " + str(bottom_dist)
             print "Updating vote list: " + str(votelist)
             print "Overall vote fraction: " + str(vote_fraction)
+                        
         
         ind_maxfrac = np.argmax(vote_fraction)
 
@@ -180,9 +198,9 @@ def alternative_vote(riding_list):
     blochange = []
     n_iterations = []
     
-    for riding in riding_list:
+    for i, riding in enumerate(riding_list):
         
-        print riding.name
+        print riding.name, i
         convotes = riding.party_result('Conservative')
         libvotes = riding.party_result('Liberal')
         ndpvotes = riding.party_result('NDP-New Democratic Party')
@@ -192,7 +210,6 @@ def alternative_vote(riding_list):
         votelist = np.array([convotes,libvotes,ndpvotes,grevotes,blovotes])
         ind_max = np.argmax(votelist)
         fptp_winner = partylist[ind_max]
-
 
         runoff_result = instant_runoff(np.array(votelist), verbose = True)
         n_iterations.append(runoff_result[2])
@@ -241,7 +258,7 @@ def alternative_vote(riding_list):
         if runoff_result[1] == 'Bloc Québécois':
             results[4] += 1
 
-    print n_iterations.count(0), n_iterations.count(1), n_iterations.count(2), n_iterations.count(3) 
+    print n_iterations.count(0), n_iterations.count(1), n_iterations.count(2), n_iterations.count(3), n_iterations.count(4)
     print n_changed
     print changed_party
     print party_lost
@@ -281,4 +298,4 @@ if __name__ == '__main__':
 
     riding_list = extract_electiondata()
     av_results= alternative_vote(riding_list)
-    plot_results(av_results)
+    #plot_results(av_results)
